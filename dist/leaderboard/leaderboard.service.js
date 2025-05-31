@@ -93,17 +93,6 @@ let LeaderboardService = class LeaderboardService {
     getSortedTeams() {
         return this.calculateTotalPoints().sort((a, b) => b.totalPoints - a.totalPoints);
     }
-    getRevealedTeams() {
-        const sortedTeams = this.getSortedTeams();
-        const revealed = [];
-        for (let i = 0; i < this.gameState.revealedTeams; i++) {
-            const teamIndex = sortedTeams.length - 1 - i;
-            if (teamIndex >= 0) {
-                revealed.unshift(sortedTeams[teamIndex]);
-            }
-        }
-        return revealed;
-    }
 };
 exports.LeaderboardService = LeaderboardService;
 exports.LeaderboardService = LeaderboardService = __decorate([

@@ -96,9 +96,7 @@ body {
     font-weight: 600;
     color: white;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    transform: translateY(100px);
-    animation: slideInFromBottom 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    /* Remove automatic animation - we control visibility manually */
 }
 
 @keyframes slideInFromBottom {
@@ -141,6 +139,8 @@ body {
     flex-grow: 1;
     text-align: left;
     margin-left: 20px;
+    font-size: 1.8rem;
+    font-weight: 700;
 }
 
 .leaderboard-points {
@@ -228,16 +228,4 @@ body {
     }
 }
 
-/* Animation delays for leaderboard reveals */
-.leaderboard-item:nth-child(1) { animation-delay: 0.1s; }
-.leaderboard-item:nth-child(2) { animation-delay: 0.2s; }
-.leaderboard-item:nth-child(3) { animation-delay: 0.3s; }
-.leaderboard-item:nth-child(4) { animation-delay: 0.4s; }
-.leaderboard-item:nth-child(5) { animation-delay: 0.5s; }
-.leaderboard-item:nth-child(6) { animation-delay: 0.6s; }
-.leaderboard-item:nth-child(7) { animation-delay: 0.7s; }
-.leaderboard-item:nth-child(8) { animation-delay: 0.8s; }
-.leaderboard-item:nth-child(9) { animation-delay: 0.9s; }
-.leaderboard-item:nth-child(10) { animation-delay: 1.0s; }
-.leaderboard-item:nth-child(11) { animation-delay: 1.1s; }
-.leaderboard-item:nth-child(12) { animation-delay: 1.2s; }
+/* Removed animation delays to allow for manual sequential reveal control */

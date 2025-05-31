@@ -4,6 +4,7 @@ class DisplayController {
         this.socket = io();
         this.currentView = 'logo';
         this.gameState = null;
+        this.lastRevealedCount = 0; // Track how many teams were previously revealed
         this.timer = {
             minutes: 5,
             seconds: 0,
@@ -109,80 +110,112 @@ class DisplayController {
                     const score = this.gameState.scores.find(s => s.teamId === team.id && s.taskId === task.id);
                     return `<td>${score ? score.points : 0}</td>`;
                 }).join('')}
-                <td class="fw-bold text-warning">${team.totalPoints || 0}</td>
-            </tr>
+                <td class="fw-bold text-warning">${team.totalPoints || 0}</td>            </tr>
         `).join('');
-    }
-
-    updateLeaderboard() {
+    }    updateLeaderboard() {
         const leaderboardList = document.getElementById('leaderboardList');
         
         if (this.gameState.revealedTeams === 0) {
             leaderboardList.innerHTML = '';
+            this.lastRevealedCount = 0; // Reset tracking
             return;
         }
 
-        // Don't update if we're in the middle of a reveal animation
-        if (leaderboardList.querySelector('.leaderboard-item[style*="animation"]')) {
-            return;
+        // Get all teams sorted by score (best to worst)
+        const allSortedTeams = this.getAllSortedTeams();
+        
+        // Check if we need to rebuild (first time or teams changed)
+        if (leaderboardList.children.length === 0 || 
+            leaderboardList.children.length !== allSortedTeams.length) {
+            this.buildFixedPositionLeaderboard(allSortedTeams);
+            this.lastRevealedCount = 0; // Reset tracking on rebuild
         }
+        
+        // Update visibility based on revealed teams
+        this.updateTeamVisibility(allSortedTeams);
+    }
 
-        const revealedTeams = this.getRevealedTeams();
-        leaderboardList.innerHTML = revealedTeams.map((team, index) => {
-            const position = revealedTeams.length - index;
+    getAllSortedTeams() {
+        if (!this.gameState.teams) return [];
+        return [...this.gameState.teams].sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+    }    buildFixedPositionLeaderboard(allSortedTeams) {
+        const leaderboardList = document.getElementById('leaderboardList');
+        leaderboardList.innerHTML = '';
+        
+        // Create all team elements in their fixed positions, but hidden initially
+        allSortedTeams.forEach((team, index) => {
+            const position = index + 1;
             const positionClass = position === 1 ? 'gold' : position === 2 ? 'silver' : position === 3 ? 'bronze' : '';
             
-            return `
-                <div class="leaderboard-item">
-                    <div class="leaderboard-position ${positionClass}">${position}</div>
-                    <div class="leaderboard-team-name">${team.name}</div>
-                    <div class="leaderboard-points">${team.totalPoints} pts</div>
-                </div>
+            const teamElement = document.createElement('div');
+            teamElement.className = 'leaderboard-item';
+            teamElement.dataset.teamId = team.id;
+            teamElement.innerHTML = `
+                <div class="leaderboard-position ${positionClass}">${position}</div>
+                <div class="leaderboard-team-name">${team.name}</div>
+                <div class="leaderboard-points">${team.totalPoints} pts</div>
             `;
-        }).join('');
-    }
-
-    getRevealedTeams() {
-        if (!this.gameState.teams) return [];
+            
+            // Initially hide all teams
+            teamElement.style.opacity = '0';
+            teamElement.style.transform = 'translateY(50px)';
+            teamElement.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            
+            leaderboardList.appendChild(teamElement);
+        });
+    }    updateTeamVisibility(allSortedTeams) {
+        const leaderboardList = document.getElementById('leaderboardList');
+        const totalTeams = allSortedTeams.length;
+        const currentRevealedCount = this.gameState.revealedTeams;
         
-        const sortedTeams = [...this.gameState.teams].sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
-        const revealed = [];
-        
-        // Reveal from last to first (bottom to top)
-        for (let i = 0; i < this.gameState.revealedTeams; i++) {
-            const teamIndex = sortedTeams.length - 1 - i;
-            if (teamIndex >= 0) {
-                revealed.unshift(sortedTeams[teamIndex]);
+        // Only animate if there's a new team to reveal
+        if (currentRevealedCount > this.lastRevealedCount) {
+            // Find the newly revealed team (the worst team among the revealed ones)
+            const newlyRevealedIndex = totalTeams - currentRevealedCount;
+            if (newlyRevealedIndex >= 0 && newlyRevealedIndex < totalTeams) {
+                const newlyRevealedTeam = allSortedTeams[newlyRevealedIndex];
+                const teamElement = leaderboardList.querySelector(`[data-team-id="${newlyRevealedTeam.id}"]`);
+                
+                if (teamElement && teamElement.style.opacity === '0') {
+                    // Reveal this team with animation
+                    setTimeout(() => {
+                        teamElement.style.opacity = '1';
+                        teamElement.style.transform = 'translateY(0)';
+                    }, 100);
+                }
             }
+            
+            // Update the tracking variable
+            this.lastRevealedCount = currentRevealedCount;
         }
         
-        return revealed;
+        // Handle reset case (when revealedTeams goes back to 0)
+        if (currentRevealedCount === 0 && this.lastRevealedCount > 0) {
+            // Hide all teams
+            allSortedTeams.forEach((team) => {
+                const teamElement = leaderboardList.querySelector(`[data-team-id="${team.id}"]`);
+                if (teamElement) {
+                    teamElement.style.opacity = '0';
+                    teamElement.style.transform = 'translateY(50px)';
+                }
+            });
+            this.lastRevealedCount = 0;
+        }
     }
 
-    animateTeamReveal(data) {
-        const leaderboardList = document.getElementById('leaderboardList');
-        const revealedTeams = data.revealedTeams;
+    isTeamRevealed(team, allSortedTeams) {
+        // Teams are revealed from worst to best
+        // So we reveal the last N teams where N = revealedTeams count
+        const teamIndex = allSortedTeams.findIndex(t => t.id === team.id);
+        const totalTeams = allSortedTeams.length;
+        const worstRevealedIndex = totalTeams - this.gameState.revealedTeams;
         
-        if (revealedTeams.length === 0) return;
-
-        // Add the new team with animation
-        const newTeam = revealedTeams[0]; // The newly revealed team (at the top)
-        const position = revealedTeams.length;
-        const positionClass = position === 1 ? 'gold' : position === 2 ? 'silver' : position === 3 ? 'bronze' : '';
-        
-        const teamElement = document.createElement('div');
-        teamElement.className = 'leaderboard-item';
-        teamElement.innerHTML = `
-            <div class="leaderboard-position ${positionClass}">${position}</div>
-            <div class="leaderboard-team-name">${newTeam.name}</div>
-            <div class="leaderboard-points">${newTeam.totalPoints} pts</div>
-        `;
-        
-        // Insert at the beginning (top)
-        leaderboardList.insertBefore(teamElement, leaderboardList.firstChild);
-    }
-
-    initializeTimer() {
+        return teamIndex >= worstRevealedIndex;
+    }    animateTeamReveal(data) {
+        // Simply trigger the visibility update, the fixed position system handles the rest
+        const allSortedTeams = this.getAllSortedTeams();
+        this.updateTeamVisibility(allSortedTeams);
+    }    initializeTimer() {
         this.updateTimerDisplay();
     }
 

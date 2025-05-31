@@ -88,13 +88,11 @@ export class LeaderboardGateway {
     this.leaderboardService.removeSoundAlert(index);
     this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
   }
-
   @SubscribeMessage('revealNextTeam')
   handleRevealNextTeam() {
     this.leaderboardService.revealNextTeam();
     this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
     this.server.emit('revealTeam', {
-      revealedTeams: this.leaderboardService.getRevealedTeams(),
       totalRevealed: this.leaderboardService.getGameState().revealedTeams,
     });
   }

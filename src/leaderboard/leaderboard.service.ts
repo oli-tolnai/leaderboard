@@ -107,22 +107,6 @@ export class LeaderboardService {
     }));
   }
 
-  getSortedTeams(): Team[] {
-    return this.calculateTotalPoints().sort((a, b) => b.totalPoints - a.totalPoints);
-  }
-
-  getRevealedTeams(): Team[] {
-    const sortedTeams = this.getSortedTeams();
-    const revealed = [];
-    
-    // Reveal from last to first (bottom to top)
-    for (let i = 0; i < this.gameState.revealedTeams; i++) {
-      const teamIndex = sortedTeams.length - 1 - i;
-      if (teamIndex >= 0) {
-        revealed.unshift(sortedTeams[teamIndex]);
-      }
-    }
-    
-    return revealed;
+  getSortedTeams(): Team[] {    return this.calculateTotalPoints().sort((a, b) => b.totalPoints - a.totalPoints);
   }
 }

@@ -72,7 +72,6 @@ let LeaderboardGateway = class LeaderboardGateway {
         this.leaderboardService.revealNextTeam();
         this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
         this.server.emit('revealTeam', {
-            revealedTeams: this.leaderboardService.getRevealedTeams(),
             totalRevealed: this.leaderboardService.getGameState().revealedTeams,
         });
     }
