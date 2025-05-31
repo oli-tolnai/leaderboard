@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competition Leaderboard - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="position-sticky pt-3">
+                    <h4 class="text-white mb-4">Admin Control</h4>
+                    
+                    <!-- View Controls -->
+                    <div class="mb-4">
+                        <h6 class="text-white-50 mb-2">Display Views</h6>
+                        <div class="btn-group-vertical w-100" role="group">
+                            <button type="button" class="btn btn-outline-light mb-2" id="logoViewBtn">Logo</button>
+                            <button type="button" class="btn btn-outline-light mb-2" id="scoreboardViewBtn">Scoreboard</button>
+                            <button type="button" class="btn btn-outline-light mb-2" id="leaderboardViewBtn">Leaderboard</button>
+                            <button type="button" class="btn btn-outline-light mb-2" id="timerViewBtn">Timer</button>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard Controls -->
+                    <div class="mb-4">
+                        <h6 class="text-white-50 mb-2">Leaderboard Controls</h6>
+                        <button type="button" class="btn btn-warning w-100 mb-2" id="revealNextBtn">Reveal Next Team</button>
+                        <button type="button" class="btn btn-secondary w-100" id="resetRevealBtn">Reset Reveal</button>
+                    </div>
+
+                    <!-- Timer Controls -->
+                    <div class="mb-4">
+                        <h6 class="text-white-50 mb-2">Timer Controls</h6>
+                        <div class="btn-group w-100 mb-2" role="group">
+                            <button type="button" class="btn btn-success" id="startTimerBtn">Start</button>
+                            <button type="button" class="btn btn-warning" id="pauseTimerBtn">Pause</button>
+                            <button type="button" class="btn btn-danger" id="resetTimerBtn">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2 text-white">Competition Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-light" id="currentViewDisplay">Current View: Logo</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs nav-dark mb-4" id="adminTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="teams-tab" data-bs-toggle="tab" data-bs-target="#teams" type="button">Teams</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks" type="button">Tasks</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="scoring-tab" data-bs-toggle="tab" data-bs-target="#scoring" type="button">Scoring Matrix</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="timer-tab" data-bs-toggle="tab" data-bs-target="#timer" type="button">Timer Settings</button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="adminTabContent">
+                    <!-- Teams Tab -->
+                    <div class="tab-pane fade show active" id="teams" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-white mb-3">Add Team</h5>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="teamNameInput" placeholder="Team name">
+                                    <button class="btn btn-primary" type="button" id="addTeamBtn">Add Team</button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-white mb-3">Teams List</h5>
+                                <div class="list-group" id="teamsList">
+                                    <!-- Teams will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Tab -->
+                    <div class="tab-pane fade" id="tasks" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-white mb-3">Add Task</h5>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="taskNameInput" placeholder="Task name">
+                                    <button class="btn btn-primary" type="button" id="addTaskBtn">Add Task</button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-white mb-3">Tasks List</h5>
+                                <div class="list-group" id="tasksList">
+                                    <!-- Tasks will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scoring Matrix Tab -->
+                    <div class="tab-pane fade" id="scoring" role="tabpanel">
+                        <h5 class="text-white mb-3">Scoring Matrix</h5>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped" id="scoringMatrix">
+                                <thead>
+                                    <tr>
+                                        <th>Team</th>
+                                        <!-- Task columns will be added dynamically -->
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Scoring rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Timer Settings Tab -->
+                    <div class="tab-pane fade" id="timer" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-white mb-3">Timer Settings</h5>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label for="timerMinutes" class="form-label text-white">Minutes</label>
+                                        <input type="number" class="form-control" id="timerMinutes" min="0" max="59" value="5">
+                                    </div>
+                                    <div class="col">
+                                        <label for="timerSeconds" class="form-label text-white">Seconds</label>
+                                        <input type="number" class="form-control" id="timerSeconds" min="0" max="59" value="0">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" id="setTimerBtn">Set Timer</button>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-white mb-3">Sound Alerts</h5>
+                                <div class="mb-3">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <select class="form-select" id="soundFileSelect">
+                                                <!-- Sound files will be populated here -->
+                                            </select>
+                                        </div>
+                                        <div class="col-3">
+                                            <input type="number" class="form-control" id="alertMinutes" placeholder="Min" min="0" max="59">
+                                        </div>
+                                        <div class="col-3">
+                                            <input type="number" class="form-control" id="alertSeconds" placeholder="Sec" min="0" max="59">
+                                        </div>
+                                        <div class="col-2">
+                                            <button class="btn btn-primary" id="addSoundAlertBtn">Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="list-group" id="soundAlertsList">
+                                    <!-- Sound alerts will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
