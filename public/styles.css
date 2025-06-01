@@ -48,6 +48,7 @@ body {
 .table-dark {
     background-color: #1d1c2c;
     border-color: #171725;
+    margin-top: 20px;
 }
 
 .table-dark th {
@@ -55,7 +56,8 @@ body {
     border-color: #30384d;
     color: white;
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
+    /* font-size: 1.1rem; */
     padding: 15px;
     text-align: center;
 }
@@ -64,7 +66,8 @@ body {
     border-color: #30384d;
     padding: 12px 15px;
     text-align: center;
-    font-size: 1rem;
+    font-size: 1.45rem;
+    /* font-size: 1rem; */
     vertical-align: middle;
 }
 
@@ -92,7 +95,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 1.4rem;
+    font-size: 2.4rem;
+    /* font-size: 1.4rem; */
     font-weight: 600;
     color: white;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
@@ -161,10 +165,10 @@ body {
 }
 
 .timer-text {
-    font-size: 8rem;
+    font-size: 25rem;
     font-weight: bold;
     color: white;
-    font-family: 'Courier New', monospace;
+    font-family: 'Roboto', 'Courier New', monospace;
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
     letter-spacing: 0.1em;
 }
