@@ -70,9 +70,11 @@ let LeaderboardGateway = class LeaderboardGateway {
     }
     handleRevealNextTeam() {
         this.leaderboardService.revealNextTeam();
-        this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
+        const gameState = this.leaderboardService.getGameState();
+        this.server.emit('gameStateUpdate', gameState);
         this.server.emit('revealTeam', {
-            totalRevealed: this.leaderboardService.getGameState().revealedTeams,
+            totalRevealed: gameState.revealedTeams,
+            revealedRanks: gameState.revealedRanks,
         });
     }
     handleResetReveal() {

@@ -2,6 +2,7 @@ export interface Team {
     id: string;
     name: string;
     totalPoints: number;
+    rank?: number;
 }
 export interface Task {
     id: string;
@@ -29,4 +30,5 @@ export interface GameState {
     timer: TimerConfig;
     soundAlerts: SoundAlert[];
     revealedTeams: number;
+    revealedRanks: number;
 }

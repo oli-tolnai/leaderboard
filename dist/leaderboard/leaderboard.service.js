@@ -18,6 +18,7 @@ let LeaderboardService = class LeaderboardService {
             timer: { minutes: 5, seconds: 0 },
             soundAlerts: [],
             revealedTeams: 0,
+            revealedRanks: 0,
         };
     }
     getGameState() {
@@ -65,6 +66,7 @@ let LeaderboardService = class LeaderboardService {
         this.gameState.currentView = view;
         if (view === 'leaderboard') {
             this.gameState.revealedTeams = 0;
+            this.gameState.revealedRanks = 0;
         }
     }
     setTimer(minutes, seconds) {
@@ -77,13 +79,22 @@ let LeaderboardService = class LeaderboardService {
         this.gameState.soundAlerts.splice(index, 1);
     }
     revealNextTeam() {
-        const sortedTeams = this.getSortedTeams();
-        if (this.gameState.revealedTeams < sortedTeams.length) {
-            this.gameState.revealedTeams++;
+        const rankedTeams = this.calculateStandardRanking();
+        if (rankedTeams.length === 0)
+            return;
+        const currentMaxRevealedRank = this.gameState.revealedRanks;
+        const nextRankToReveal = currentMaxRevealedRank + 1;
+        const sortedRanks = [...new Set(rankedTeams.map(team => team.rank))].sort((a, b) => b - a);
+        if (nextRankToReveal <= sortedRanks.length) {
+            const rankToReveal = sortedRanks[nextRankToReveal - 1];
+            const teamsAtThisRank = rankedTeams.filter(team => team.rank === rankToReveal);
+            this.gameState.revealedTeams += teamsAtThisRank.length;
+            this.gameState.revealedRanks = nextRankToReveal;
         }
     }
     resetReveal() {
         this.gameState.revealedTeams = 0;
+        this.gameState.revealedRanks = 0;
     }
     calculateTotalPoints() {
         return this.gameState.teams.map(team => (Object.assign(Object.assign({}, team), { totalPoints: this.gameState.scores
@@ -92,6 +103,24 @@ let LeaderboardService = class LeaderboardService {
     }
     getSortedTeams() {
         return this.calculateTotalPoints().sort((a, b) => b.totalPoints - a.totalPoints);
+    }
+    calculateStandardRanking() {
+        const sortedTeams = this.getSortedTeams();
+        if (!sortedTeams || sortedTeams.length === 0)
+            return [];
+        const rankedTeams = [];
+        let currentRank = 1;
+        for (let i = 0; i < sortedTeams.length; i++) {
+            const team = sortedTeams[i];
+            if (i > 0 && team.totalPoints === sortedTeams[i - 1].totalPoints) {
+                rankedTeams.push(Object.assign(Object.assign({}, team), { rank: rankedTeams[i - 1].rank }));
+            }
+            else {
+                rankedTeams.push(Object.assign(Object.assign({}, team), { rank: currentRank }));
+            }
+            currentRank = i + 2;
+        }
+        return rankedTeams;
     }
 };
 exports.LeaderboardService = LeaderboardService;

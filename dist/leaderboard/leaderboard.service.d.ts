@@ -16,4 +16,5 @@ export declare class LeaderboardService {
     resetReveal(): void;
     private calculateTotalPoints;
     getSortedTeams(): Team[];
+    calculateStandardRanking(): Team[];
 }

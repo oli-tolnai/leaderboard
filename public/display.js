@@ -207,28 +207,35 @@ class DisplayController {
         });
     }    updateTeamVisibility(allSortedTeams) {
         const leaderboardList = document.getElementById('leaderboardList');
-        const totalTeams = allSortedTeams.length;
         const currentRevealedCount = this.gameState.revealedTeams;
+        const currentRevealedRanks = this.gameState.revealedRanks || 0;
         
         // Calculate ranked teams for proper position handling
         const rankedTeams = this.calculateStandardRanking(allSortedTeams);
         
-        // Only animate if there's a new team to reveal
+        // Only animate if there are new teams to reveal
         if (currentRevealedCount > this.lastRevealedCount) {
-            // Find the newly revealed team (the worst team among the revealed ones)
-            const newlyRevealedIndex = totalTeams - currentRevealedCount;
-            if (newlyRevealedIndex >= 0 && newlyRevealedIndex < totalTeams) {
-                const newlyRevealedTeam = rankedTeams[newlyRevealedIndex];
-                const teamElement = leaderboardList.querySelector(`[data-team-id="${newlyRevealedTeam.id}"]`);
-                
-                if (teamElement && teamElement.style.opacity === '0') {
-                    // Reveal this team with animation
-                    setTimeout(() => {
-                        teamElement.style.opacity = '1';
-                        teamElement.style.transform = 'translateY(0)';
-                    }, 100);
+            // Find all newly revealed teams by checking if they should be revealed based on rank
+            const sortedRanks = [...new Set(rankedTeams.map(team => team.rank))].sort((a, b) => b - a);
+            
+            // Teams are revealed from worst to best rank
+            const ranksToReveal = sortedRanks.slice(0, currentRevealedRanks);
+            
+            rankedTeams.forEach((team) => {
+                if (ranksToReveal.includes(team.rank)) {
+                    const teamElement = leaderboardList.querySelector(`[data-team-id="${team.id}"]`);
+                    
+                    if (teamElement && teamElement.style.opacity === '0') {
+                        // Reveal this team with animation
+                        // Add a small delay based on rank to create a nice effect for simultaneous reveals
+                        const delay = (sortedRanks.indexOf(team.rank)) * 100 + 100;
+                        setTimeout(() => {
+                            teamElement.style.opacity = '1';
+                            teamElement.style.transform = 'translateY(0)';
+                        }, delay);
+                    }
                 }
-            }
+            });
             
             // Update the tracking variable
             this.lastRevealedCount = currentRevealedCount;
@@ -246,7 +253,7 @@ class DisplayController {
             });
             this.lastRevealedCount = 0;
         }
-    }    isTeamRevealed(team, allSortedTeams) {
+    }isTeamRevealed(team, allSortedTeams) {
         // Teams are revealed from worst to best
         // So we reveal the last N teams where N = revealedTeams count
         const teamIndex = allSortedTeams.findIndex(t => t.id === team.id);

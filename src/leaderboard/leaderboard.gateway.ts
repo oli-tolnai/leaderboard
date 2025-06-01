@@ -87,13 +87,14 @@ export class LeaderboardGateway {
   handleRemoveSoundAlert(@MessageBody() index: number) {
     this.leaderboardService.removeSoundAlert(index);
     this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
-  }
-  @SubscribeMessage('revealNextTeam')
+  }  @SubscribeMessage('revealNextTeam')
   handleRevealNextTeam() {
     this.leaderboardService.revealNextTeam();
-    this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
+    const gameState = this.leaderboardService.getGameState();
+    this.server.emit('gameStateUpdate', gameState);
     this.server.emit('revealTeam', {
-      totalRevealed: this.leaderboardService.getGameState().revealedTeams,
+      totalRevealed: gameState.revealedTeams,
+      revealedRanks: gameState.revealedRanks,
     });
   }
 

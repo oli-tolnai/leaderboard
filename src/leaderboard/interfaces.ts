@@ -2,6 +2,7 @@ export interface Team {
   id: string;
   name: string;
   totalPoints: number;
+  rank?: number; // Optional rank for leaderboard display
 }
 
 export interface Task {
@@ -34,4 +35,5 @@ export interface GameState {
   timer: TimerConfig;
   soundAlerts: SoundAlert[];
   revealedTeams: number; // For leaderboard reveal animation
+  revealedRanks: number; // Track revealed ranks for simultaneous tie reveals
 }
