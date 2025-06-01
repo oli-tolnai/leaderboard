@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-case { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Ranking Algorithm Test</h1>
+    
+    <div class="test-case">
+        <h2>Test Case: Teams with Ties</h2>
+        <table>
+            <tr>
+                <th>Team</th>
+                <th>Points</th>
+                <th>Old Ranking (1,2,3,4)</th>
+                <th>New Ranking (1,2,2,4)</th>
+            </tr>
+            <tbody id="testResults">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Copy the ranking function from display.js
+        function calculateStandardRanking(sortedTeams) {
+            if (!sortedTeams || sortedTeams.length === 0) return [];
+            
+            const rankedTeams = [];
+            let currentRank = 1;
+            
+            for (let i = 0; i < sortedTeams.length; i++) {
+                const team = sortedTeams[i];
+                
+                // If this is not the first team and has the same score as the previous team,
+                // give it the same rank as the previous team
+                if (i > 0 && team.totalPoints === sortedTeams[i - 1].totalPoints) {
+                    rankedTeams.push({
+                        ...team,
+                        rank: rankedTeams[i - 1].rank
+                    });
+                } else {
+                    // Different score, so assign the current rank
+                    rankedTeams.push({
+                        ...team,
+                        rank: currentRank
+                    });
+                }
+                
+                // Update currentRank for the next iteration
+                // In standard competition ranking, the next rank after tied teams
+                // is the current position + 1 (which skips ranks for ties)
+                currentRank = i + 2;
+            }
+            
+            return rankedTeams;
+        }
+
+        // Test data
+        const testTeams = [
+            { name: "Team Alpha", totalPoints: 100 },
+            { name: "Team Beta", totalPoints: 90 },
+            { name: "Team Gamma", totalPoints: 90 },  // Tied with Beta
+            { name: "Team Delta", totalPoints: 80 }
+        ].sort((a, b) => b.totalPoints - a.totalPoints);
+
+        // Calculate rankings
+        const rankedTeams = calculateStandardRanking(testTeams);
+
+        // Display results
+        const tbody = document.getElementById('testResults');
+        rankedTeams.forEach((team, index) => {
+            const row = tbody.insertRow();
+            row.insertCell(0).textContent = team.name;
+            row.insertCell(1).textContent = team.totalPoints;
+            row.insertCell(2).textContent = index + 1; // Old ranking
+            row.insertCell(3).textContent = team.rank; // New ranking
+            
+            // Highlight ties
+            if (index > 0 && team.totalPoints === rankedTeams[index - 1].totalPoints) {
+                row.style.backgroundColor = '#ffffcc';
+            }
+        });
+    </script>
+</body>
+</html>

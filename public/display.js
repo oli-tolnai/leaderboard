@@ -87,9 +87,7 @@ class DisplayController {
             }
             this.currentView = newView;
         }, 400);
-    }
-
-    updateScoreboard() {
+    }    updateScoreboard() {
         const header = document.getElementById('scoreboardHeader');
         const body = document.getElementById('scoreboardBody');
 
@@ -97,22 +95,29 @@ class DisplayController {
 
         // Update header
         header.innerHTML = `
+            <th>Rank</th>
             <th>Team</th>
             ${this.gameState.tasks.map(task => `<th>${task.name}</th>`).join('')}
             <th>Total</th>
         `;
 
+        // Get sorted teams and calculate ranking
+        const sortedTeams = this.getAllSortedTeams();
+        const rankedTeams = this.calculateStandardRanking(sortedTeams);
+
         // Update body
-        body.innerHTML = this.gameState.teams.map(team => `
+        body.innerHTML = rankedTeams.map(team => `
             <tr>
+                <td class="fw-bold text-info">${team.rank}</td>
                 <td class="fw-bold">${team.name}</td>
                 ${this.gameState.tasks.map(task => {
                     const score = this.gameState.scores.find(s => s.teamId === team.id && s.taskId === task.id);
                     return `<td>${score ? score.points : 0}</td>`;
                 }).join('')}
-                <td class="fw-bold text-warning">${team.totalPoints || 0}</td>            </tr>
+                <td class="fw-bold text-warning">${team.totalPoints || 0}</td>
+            </tr>
         `).join('');
-    }    updateLeaderboard() {
+    }updateLeaderboard() {
         const leaderboardList = document.getElementById('leaderboardList');
         
         if (this.gameState.revealedTeams === 0) {
@@ -133,19 +138,56 @@ class DisplayController {
         
         // Update visibility based on revealed teams
         this.updateTeamVisibility(allSortedTeams);
-    }
-
-    getAllSortedTeams() {
+    }    getAllSortedTeams() {
         if (!this.gameState.teams) return [];
         return [...this.gameState.teams].sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
-    }    buildFixedPositionLeaderboard(allSortedTeams) {
+    }
+
+    calculateStandardRanking(sortedTeams) {
+        if (!sortedTeams || sortedTeams.length === 0) return [];
+        
+        const rankedTeams = [];
+        let currentRank = 1;
+        
+        for (let i = 0; i < sortedTeams.length; i++) {
+            const team = sortedTeams[i];
+            
+            // If this is not the first team and has the same score as the previous team,
+            // give it the same rank as the previous team
+            if (i > 0 && team.totalPoints === sortedTeams[i - 1].totalPoints) {
+                rankedTeams.push({
+                    ...team,
+                    rank: rankedTeams[i - 1].rank
+                });
+            } else {
+                // Different score, so assign the current rank
+                rankedTeams.push({
+                    ...team,
+                    rank: currentRank
+                });
+            }
+            
+            // Update currentRank for the next iteration
+            // In standard competition ranking, the next rank after tied teams
+            // is the current position + 1 (which skips ranks for ties)
+            currentRank = i + 2;
+        }
+        
+        return rankedTeams;
+    }buildFixedPositionLeaderboard(allSortedTeams) {
         const leaderboardList = document.getElementById('leaderboardList');
         leaderboardList.innerHTML = '';
         
-        // Create all team elements in their fixed positions, but hidden initially
-        allSortedTeams.forEach((team, index) => {
-            const position = index + 1;
-            const positionClass = position === 1 ? 'gold' : position === 2 ? 'silver' : position === 3 ? 'bronze' : '';
+        // Calculate standard competition ranking (skip ranking)
+        const rankedTeams = this.calculateStandardRanking(allSortedTeams);
+          // Create all team elements in their fixed positions, but hidden initially
+        rankedTeams.forEach((team) => {
+            const position = team.rank;
+            // For medal colors, we need to consider that with skip ranking, 
+            // multiple teams can have the same rank (e.g., two teams at rank 2)
+            const positionClass = position === 1 ? 'gold' : 
+                                 position === 2 ? 'silver' : 
+                                 position === 3 ? 'bronze' : '';
             
             const teamElement = document.createElement('div');
             teamElement.className = 'leaderboard-item';
@@ -168,12 +210,15 @@ class DisplayController {
         const totalTeams = allSortedTeams.length;
         const currentRevealedCount = this.gameState.revealedTeams;
         
+        // Calculate ranked teams for proper position handling
+        const rankedTeams = this.calculateStandardRanking(allSortedTeams);
+        
         // Only animate if there's a new team to reveal
         if (currentRevealedCount > this.lastRevealedCount) {
             // Find the newly revealed team (the worst team among the revealed ones)
             const newlyRevealedIndex = totalTeams - currentRevealedCount;
             if (newlyRevealedIndex >= 0 && newlyRevealedIndex < totalTeams) {
-                const newlyRevealedTeam = allSortedTeams[newlyRevealedIndex];
+                const newlyRevealedTeam = rankedTeams[newlyRevealedIndex];
                 const teamElement = leaderboardList.querySelector(`[data-team-id="${newlyRevealedTeam.id}"]`);
                 
                 if (teamElement && teamElement.style.opacity === '0') {
@@ -192,7 +237,7 @@ class DisplayController {
         // Handle reset case (when revealedTeams goes back to 0)
         if (currentRevealedCount === 0 && this.lastRevealedCount > 0) {
             // Hide all teams
-            allSortedTeams.forEach((team) => {
+            rankedTeams.forEach((team) => {
                 const teamElement = leaderboardList.querySelector(`[data-team-id="${team.id}"]`);
                 if (teamElement) {
                     teamElement.style.opacity = '0';
@@ -201,9 +246,7 @@ class DisplayController {
             });
             this.lastRevealedCount = 0;
         }
-    }
-
-    isTeamRevealed(team, allSortedTeams) {
+    }    isTeamRevealed(team, allSortedTeams) {
         // Teams are revealed from worst to best
         // So we reveal the last N teams where N = revealedTeams count
         const teamIndex = allSortedTeams.findIndex(t => t.id === team.id);
@@ -215,7 +258,7 @@ class DisplayController {
         // Simply trigger the visibility update, the fixed position system handles the rest
         const allSortedTeams = this.getAllSortedTeams();
         this.updateTeamVisibility(allSortedTeams);
-    }    initializeTimer() {
+    }initializeTimer() {
         this.updateTimerDisplay();
     }
 
