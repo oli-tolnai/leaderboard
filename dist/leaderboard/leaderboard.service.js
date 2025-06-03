@@ -150,6 +150,17 @@ let LeaderboardService = class LeaderboardService {
     getUngroupedTasks() {
         return this.gameState.tasks.filter(task => !task.groupId);
     }
+    loadGameState(data) {
+        this.gameState.teams = data.teams || [];
+        this.gameState.tasks = data.tasks || [];
+        this.gameState.taskGroups = data.taskGroups || [];
+        this.gameState.scores = data.scores || [];
+        this.gameState.timer = data.timer || { minutes: 5, seconds: 0 };
+        this.gameState.soundAlerts = data.soundAlerts || [];
+        this.gameState.revealedTeams = 0;
+        this.gameState.revealedRanks = 0;
+        this.gameState.currentView = 'logo';
+    }
 };
 exports.LeaderboardService = LeaderboardService;
 exports.LeaderboardService = LeaderboardService = __decorate([

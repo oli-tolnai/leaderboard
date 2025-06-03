@@ -14,6 +14,7 @@ class DisplayController {
         
         this.initializeSocketEvents();
         this.initializeTimer();
+        this.initializeLocalStorage();
     }
 
     initializeSocketEvents() {
@@ -45,6 +46,64 @@ class DisplayController {
         this.socket.on('playSound', (soundFile) => {
             this.playSound(soundFile);
         });
+    }
+
+    initializeLocalStorage() {
+        // Cache game state for offline viewing
+        this.offlineMode = false;
+        
+        // Load cached data if connection fails
+        this.socket.on('connect_error', () => {
+            console.log('Connection failed, trying to load cached data...');
+            this.loadCachedGameState();
+        });
+        
+        // Save game state when received
+        this.socket.on('gameStateUpdate', (gameState) => {
+            this.cacheGameState(gameState);
+        });
+    }
+
+    cacheGameState(gameState) {
+        try {
+            const cacheData = {
+                gameState,
+                timestamp: new Date().toISOString(),
+                version: '1.0'
+            };
+            localStorage.setItem('leaderboard_display_cache', JSON.stringify(cacheData));
+        } catch (error) {
+            console.warn('Could not cache game state:', error);
+        }
+    }
+
+    loadCachedGameState() {
+        try {
+            const cachedData = localStorage.getItem('leaderboard_display_cache');
+            if (cachedData) {
+                const data = JSON.parse(cachedData);
+                if (data.gameState) {
+                    console.log('Loaded cached game state from', data.timestamp);
+                    this.gameState = data.gameState;
+                    this.offlineMode = true;
+                    this.updateDisplay();
+                    this.showOfflineNotification();
+                }
+            }
+        } catch (error) {
+            console.warn('Could not load cached game state:', error);
+        }
+    }
+
+    showOfflineNotification() {
+        const notification = document.createElement('div');
+        notification.innerHTML = `
+            <div class="alert alert-warning position-fixed" style="top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999;">
+                📡 Offline Mode - Showing cached data
+                <button type="button" class="btn-close ms-2" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        document.body.appendChild(notification);
     }
 
     updateDisplay() {
@@ -438,9 +497,7 @@ class DisplayController {
             this.updateTimerDisplay();
             this.checkSoundAlerts();
         }, 1000);
-    }
-
-    pauseTimer() {
+    }    pauseTimer() {
         this.timer.isRunning = false;
         if (this.timer.intervalId) {
             clearInterval(this.timer.intervalId);

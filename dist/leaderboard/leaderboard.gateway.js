@@ -106,6 +106,10 @@ let LeaderboardGateway = class LeaderboardGateway {
     handlePlaySound(soundFile) {
         this.server.emit('playSound', soundFile);
     }
+    handleLoadGameState(data) {
+        this.leaderboardService.loadGameState(data);
+        this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
+    }
 };
 exports.LeaderboardGateway = LeaderboardGateway;
 __decorate([
@@ -233,6 +237,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], LeaderboardGateway.prototype, "handlePlaySound", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('loadGameState'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], LeaderboardGateway.prototype, "handleLoadGameState", null);
 exports.LeaderboardGateway = LeaderboardGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {

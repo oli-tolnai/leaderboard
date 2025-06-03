@@ -8,6 +8,7 @@ class AdminController {
         this.initializeSocketEvents();
         this.initializeEventListeners();
         this.populateSoundFiles();
+        this.initializeLocalStorage();
     }
 
     initializeSocketEvents() {
@@ -73,9 +74,7 @@ class AdminController {
         if (statusElement) {
             statusElement.className = `status-indicator ${connected ? 'status-connected' : 'status-disconnected'}`;
         }
-    }
-
-    updateUI() {
+    }    updateUI() {
         if (!this.gameState) return;
 
         this.updateCurrentViewDisplay();
@@ -86,6 +85,19 @@ class AdminController {
         this.updateTimerSettings();
         this.updateSoundAlerts();
         this.updateViewButtons();
+        
+        // Auto-save if enabled
+        if (this.autoSaveEnabled) {
+            this.autoSave();
+        }
+    }
+
+    autoSave() {
+        // Debounce auto-save to avoid excessive saves
+        clearTimeout(this.autoSaveTimeout);
+        this.autoSaveTimeout = setTimeout(() => {
+            this.saveToLocalStorage();
+        }, 1000); // Save 1 second after last change
     }
 
     updateCurrentViewDisplay() {
@@ -470,6 +482,291 @@ class AdminController {
         select.innerHTML = this.soundFiles.map(file => 
             `<option value="${file}">${file}</option>`
         ).join('');
+    }    initializeLocalStorage() {
+        // Add localStorage management buttons to the UI
+        this.addLocalStorageControls();
+        
+        // Auto-save on game state updates
+        this.autoSaveEnabled = localStorage.getItem('leaderboard_autosave') !== 'false';
+        
+        // Check for auto-load preference
+        const autoLoad = localStorage.getItem('leaderboard_autoload') === 'true';
+        if (autoLoad && localStorage.getItem('leaderboard_data')) {
+            // Delay auto-load to ensure socket connection is established
+            setTimeout(() => {
+                this.loadFromLocalStorage();
+            }, 1000);
+        }
+    }
+
+    addLocalStorageControls() {
+        // Check if controls already exist
+        if (document.getElementById('localStorageControls')) return;
+
+        const sidebar = document.querySelector('.sidebar .position-sticky');
+        
+        const storageControlsHTML = `
+            <div id="localStorageControls" class="mb-4 mt-4 border-top pt-3">
+                <h6 class="text-white-50 mb-2">Data Management</h6>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-info btn-sm" id="saveDataBtn">💾 Save Data</button>
+                    <button type="button" class="btn btn-warning btn-sm" id="loadDataBtn">📂 Load Data</button>
+                    <button type="button" class="btn btn-success btn-sm" id="exportDataBtn">📤 Export Data</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="importDataBtn">📥 Import Data</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="clearDataBtn">🗑️ Clear All</button>
+                </div>                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="autoSaveCheck" ${this.autoSaveEnabled ? 'checked' : ''}>
+                    <label class="form-check-label text-white-50" for="autoSaveCheck">
+                        Auto-save
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="autoLoadCheck" ${localStorage.getItem('leaderboard_autoload') === 'true' ? 'checked' : ''}>
+                    <label class="form-check-label text-white-50" for="autoLoadCheck">
+                        Auto-load on startup
+                    </label>
+                </div>
+                <small class="text-white-50 d-block mt-2" id="lastSaveInfo">
+                    ${this.getLastSaveInfo()}
+                </small>
+            </div>
+        `;
+        
+        sidebar.insertAdjacentHTML('beforeend', storageControlsHTML);
+        
+        // Add event listeners for the new buttons
+        this.addLocalStorageEventListeners();
+    }
+
+    addLocalStorageEventListeners() {
+        document.getElementById('saveDataBtn').addEventListener('click', () => this.saveToLocalStorage());
+        document.getElementById('loadDataBtn').addEventListener('click', () => this.loadFromLocalStorage());
+        document.getElementById('exportDataBtn').addEventListener('click', () => this.exportData());
+        document.getElementById('importDataBtn').addEventListener('click', () => this.importData());
+        document.getElementById('clearDataBtn').addEventListener('click', () => this.clearLocalStorage());        document.getElementById('autoSaveCheck').addEventListener('change', (e) => {
+            this.autoSaveEnabled = e.target.checked;
+            localStorage.setItem('leaderboard_autosave', this.autoSaveEnabled.toString());
+        });
+        document.getElementById('autoLoadCheck').addEventListener('change', (e) => {
+            localStorage.setItem('leaderboard_autoload', e.target.checked.toString());
+        });
+    }
+
+    saveToLocalStorage() {
+        try {
+            if (!this.gameState) {
+                alert('No data to save');
+                return;
+            }
+
+            const dataToSave = {
+                teams: this.gameState.teams,
+                tasks: this.gameState.tasks,
+                taskGroups: this.gameState.taskGroups,
+                scores: this.gameState.scores,
+                timer: this.gameState.timer,
+                soundAlerts: this.gameState.soundAlerts,
+                timestamp: new Date().toISOString(),
+                version: '1.0'
+            };
+
+            localStorage.setItem('leaderboard_data', JSON.stringify(dataToSave));
+            localStorage.setItem('leaderboard_last_save', new Date().toISOString());
+            
+            this.updateLastSaveInfo();
+            this.showNotification('Data saved successfully!', 'success');
+        } catch (error) {
+            console.error('Error saving to localStorage:', error);
+            this.showNotification('Error saving data: ' + error.message, 'error');
+        }
+    }
+
+    loadFromLocalStorage() {
+        try {
+            const savedData = localStorage.getItem('leaderboard_data');
+            if (!savedData) {
+                this.showNotification('No saved data found', 'warning');
+                return;
+            }
+
+            if (!confirm('This will replace all current data. Are you sure?')) {
+                return;
+            }
+
+            const data = JSON.parse(savedData);
+            
+            // Validate data structure
+            if (!this.validateGameData(data)) {
+                this.showNotification('Invalid data format', 'error');
+                return;
+            }
+
+            // Send data to server to update game state
+            this.socket.emit('loadGameState', {
+                teams: data.teams || [],
+                tasks: data.tasks || [],
+                taskGroups: data.taskGroups || [],
+                scores: data.scores || [],
+                timer: data.timer || { minutes: 5, seconds: 0 },
+                soundAlerts: data.soundAlerts || []
+            });
+
+            this.showNotification('Data loaded successfully!', 'success');
+        } catch (error) {
+            console.error('Error loading from localStorage:', error);
+            this.showNotification('Error loading data: ' + error.message, 'error');
+        }
+    }
+
+    exportData() {
+        try {
+            if (!this.gameState) {
+                alert('No data to export');
+                return;
+            }
+
+            const dataToExport = {
+                teams: this.gameState.teams,
+                tasks: this.gameState.tasks,
+                taskGroups: this.gameState.taskGroups,
+                scores: this.gameState.scores,
+                timer: this.gameState.timer,
+                soundAlerts: this.gameState.soundAlerts,
+                timestamp: new Date().toISOString(),
+                version: '1.0'
+            };
+
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `leaderboard_export_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            this.showNotification('Data exported successfully!', 'success');
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            this.showNotification('Error exporting data: ' + error.message, 'error');
+        }
+    }
+
+    importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (!this.validateGameData(data)) {
+                        this.showNotification('Invalid file format', 'error');
+                        return;
+                    }
+
+                    if (!confirm('This will replace all current data. Are you sure?')) {
+                        return;
+                    }
+
+                    // Send data to server to update game state
+                    this.socket.emit('loadGameState', {
+                        teams: data.teams || [],
+                        tasks: data.tasks || [],
+                        taskGroups: data.taskGroups || [],
+                        scores: data.scores || [],
+                        timer: data.timer || { minutes: 5, seconds: 0 },
+                        soundAlerts: data.soundAlerts || []
+                    });
+
+                    this.showNotification('Data imported successfully!', 'success');
+                } catch (error) {
+                    console.error('Error importing data:', error);
+                    this.showNotification('Error importing data: ' + error.message, 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    }
+
+    clearLocalStorage() {
+        if (!confirm('This will permanently delete all saved data. Are you sure?')) {
+            return;
+        }
+
+        localStorage.removeItem('leaderboard_data');
+        localStorage.removeItem('leaderboard_last_save');
+        this.updateLastSaveInfo();
+        this.showNotification('All saved data cleared', 'success');
+    }
+
+    validateGameData(data) {
+        if (!data || typeof data !== 'object') return false;
+        
+        // Check required properties exist and are arrays
+        const requiredArrays = ['teams', 'tasks', 'scores'];
+        for (const prop of requiredArrays) {
+            if (!Array.isArray(data[prop])) return false;
+        }
+
+        // Validate team structure
+        if (data.teams.some(team => !team.id || !team.name)) return false;
+        
+        // Validate task structure
+        if (data.tasks.some(task => !task.id || !task.name)) return false;
+        
+        // Validate score structure
+        if (data.scores.some(score => !score.teamId || !score.taskId || typeof score.points !== 'number')) return false;
+
+        return true;
+    }
+
+    getLastSaveInfo() {
+        const lastSave = localStorage.getItem('leaderboard_last_save');
+        if (!lastSave) return 'No saves yet';
+        
+        const saveDate = new Date(lastSave);
+        return `Last saved: ${saveDate.toLocaleDateString()} ${saveDate.toLocaleTimeString()}`;
+    }
+
+    updateLastSaveInfo() {
+        const infoElement = document.getElementById('lastSaveInfo');
+        if (infoElement) {
+            infoElement.textContent = this.getLastSaveInfo();
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        // Create a toast notification
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'error' ? 'danger' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'info'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <span>${message}</span>
+                <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
     }
 }
 

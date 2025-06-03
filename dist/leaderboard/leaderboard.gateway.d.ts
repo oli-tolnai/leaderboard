@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { LeaderboardService } from './leaderboard.service';
+import { Team, Task, TaskGroup, ScoreEntry, TimerConfig, SoundAlert } from './interfaces';
 export declare class LeaderboardGateway {
     private leaderboardService;
     server: Server;
@@ -7,11 +8,11 @@ export declare class LeaderboardGateway {
     afterInit(): void;
     handleConnection(client: Socket): void;
     handleDisconnect(client: Socket): void;
-    handleAddTeam(name: string): import("./interfaces").Team;
+    handleAddTeam(name: string): Team;
     handleRemoveTeam(teamId: string): void;
-    handleAddTask(name: string): import("./interfaces").Task;
+    handleAddTask(name: string): Task;
     handleRemoveTask(taskId: string): void;
-    handleAddTaskGroup(name: string): import("./interfaces").TaskGroup;
+    handleAddTaskGroup(name: string): TaskGroup;
     handleRemoveTaskGroup(groupId: string): void;
     handleUpdateTaskGroup(data: {
         groupId: string;
@@ -40,4 +41,12 @@ export declare class LeaderboardGateway {
     handlePauseTimer(): void;
     handleResetTimer(): void;
     handlePlaySound(soundFile: string): void;
+    handleLoadGameState(data: {
+        teams: Team[];
+        tasks: Task[];
+        taskGroups: TaskGroup[];
+        scores: ScoreEntry[];
+        timer: TimerConfig;
+        soundAlerts: SoundAlert[];
+    }): void;
 }

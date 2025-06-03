@@ -297,48 +297,132 @@ body {
     background-color: #c82333;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .sidebar {
-        min-height: auto;
+/* localStorage controls styling */
+#localStorageControls {
+    border-top: 2px solid #171725;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+#localStorageControls .btn {
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+}
+
+#localStorageControls .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#localStorageControls .btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+#localStorageControls .btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+#localStorageControls .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+#localStorageControls .btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
+#localStorageControls .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+#localStorageControls .btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+#localStorageControls .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+#localStorageControls .btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+#localStorageControls .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+#localStorageControls .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Checkbox styling */
+#localStorageControls .form-check-input {
+    background-color: #171725;
+    border-color: #30384d;
+}
+
+#localStorageControls .form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+#localStorageControls .form-check-input:focus {
+    border-color: #6c7293;
+    box-shadow: 0 0 0 0.2rem rgba(108, 114, 147, 0.25);
+}
+
+/* Last save info styling */
+#lastSaveInfo {
+    font-size: 0.75rem;
+    font-style: italic;
+    color: #8d8f99;
+    border-left: 2px solid #171725;
+    padding-left: 0.5rem;
+}
+
+/* Toast notifications */
+.alert {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    animation: slideInFromRight 0.3s ease-out;
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
     }
-    
-    .main-content {
-        min-height: auto;
-        padding-top: 20px;
-    }
-    
-    .btn-group-vertical .btn {
-        margin-bottom: 4px;
+    to {
+        transform: translateX(-50%);
+        opacity: 1;
     }
 }
 
-/* Loading states */
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
+/* Offline notification in display */
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
-.btn.loading {
-    position: relative;
-}
-
-.btn.loading::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    top: 50%;
-    left: 50%;
-    margin-left: -8px;
-    margin-top: -8px;
-    border: 2px solid transparent;
-    border-top-color: currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Data management section header */
+#localStorageControls h6 {
+    color: #8d8f99;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.7rem;
+    margin-bottom: 0.75rem;
 }

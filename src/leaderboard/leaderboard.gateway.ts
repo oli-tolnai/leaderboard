@@ -7,6 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { LeaderboardService } from './leaderboard.service';
+import { Team, Task, TaskGroup, ScoreEntry, TimerConfig, SoundAlert } from './interfaces';
 
 @WebSocketGateway({
   cors: {
@@ -143,5 +144,18 @@ export class LeaderboardGateway {
   @SubscribeMessage('playSound')
   handlePlaySound(@MessageBody() soundFile: string) {
     this.server.emit('playSound', soundFile);
+  }
+
+  @SubscribeMessage('loadGameState')
+  handleLoadGameState(@MessageBody() data: {
+    teams: Team[];
+    tasks: Task[];
+    taskGroups: TaskGroup[];
+    scores: ScoreEntry[];
+    timer: TimerConfig;
+    soundAlerts: SoundAlert[];
+  }) {
+    this.leaderboardService.loadGameState(data);
+    this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
   }
 }

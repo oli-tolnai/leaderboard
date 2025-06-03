@@ -192,12 +192,33 @@ export class LeaderboardService {  private gameState: GameState = {
       }));
     }
   }
-
   getTasksForGroup(groupId: string): Task[] {
     return this.gameState.tasks.filter(task => task.groupId === groupId);
   }
 
   getUngroupedTasks(): Task[] {
     return this.gameState.tasks.filter(task => !task.groupId);
+  }
+
+  loadGameState(data: {
+    teams: Team[];
+    tasks: Task[];
+    taskGroups: TaskGroup[];
+    scores: ScoreEntry[];
+    timer: TimerConfig;
+    soundAlerts: SoundAlert[];
+  }): void {
+    // Reset current state
+    this.gameState.teams = data.teams || [];
+    this.gameState.tasks = data.tasks || [];
+    this.gameState.taskGroups = data.taskGroups || [];
+    this.gameState.scores = data.scores || [];
+    this.gameState.timer = data.timer || { minutes: 5, seconds: 0 };
+    this.gameState.soundAlerts = data.soundAlerts || [];
+    
+    // Reset view-related state
+    this.gameState.revealedTeams = 0;
+    this.gameState.revealedRanks = 0;
+    this.gameState.currentView = 'logo';
   }
 }
