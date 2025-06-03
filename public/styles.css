@@ -176,36 +176,34 @@ body {
 
 /* Leaderboard Styles */
 .leaderboard-list {
-    max-height: 95vh; /* Maximize height for better visibility */
-    height: auto; /* Allow natural height scaling */
-    overflow-y: auto; /* Allow vertical scrolling if needed */
-    overflow-x: hidden; /* Prevent horizontal scrolling */
-    padding: 20px 40px; /* Consistent padding all around */
+    height: 100vh; /* Use full viewport height */
+    overflow: hidden; /* Remove all scrollbars */
+    padding: 8px 40px; /* Reduced padding to fit more content */
     margin: 0; /* Remove auto margin that could cause issues */
     width: 100%; /* Take full container width */
     box-sizing: border-box; /* Include padding in width calculation */
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Start from top instead of center */
+    justify-content: space-evenly; /* Distribute items evenly to fill space */
     align-items: center; /* Center content horizontally */
 }
 
 /* Add responsive margins for different screen sizes */
 @media (min-width: 768px) {
     .leaderboard-list {
-        padding: 20px 60px; /* Balanced padding for tablets */
+        padding: 10px 60px; /* Reduced padding for tablets to maintain no-scroll */
     }
 }
 
 @media (min-width: 992px) {
     .leaderboard-list {
-        padding: 30px 80px; /* More padding for desktop */
+        padding: 12px 80px; /* Reduced padding for desktop to maintain no-scroll */
     }
 }
 
 @media (min-width: 1200px) {
     .leaderboard-list {
-        padding: 30px 100px; /* Maximum padding for large screens */
+        padding: 15px 100px; /* Reduced padding for large screens to maintain no-scroll */
         max-width: 1200px; /* Constrain maximum width for better readability */
         margin: 0 auto; /* Center the container at large sizes */
     }
@@ -213,7 +211,7 @@ body {
 
 @media (min-width: 1400px) {
     .leaderboard-list {
-        padding: 40px 120px; /* Extra padding for extra large screens */
+        padding: 18px 120px; /* Reduced padding for extra large screens to maintain no-scroll */
         max-width: 1400px; /* Larger max width for extra large screens */
     }
 }
@@ -233,20 +231,21 @@ body {
     background: linear-gradient(135deg, #1d1c2c, #171725);
     border: 2px solid #30384d;
     border-radius: 15px;
-    margin: 8px 0; /* Reduced margin to fit more teams */
-    padding: 15px 25px; /* Reduced padding for better fit */
+    margin: 4px 0; /* Reduced margin for more compact layout */
+    padding: 16px 30px; /* Reduced padding to fit more items */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 1.9rem; /* Smaller font for better fit */
+    font-size: 2.1rem; /* Slightly smaller but still large font */
     font-weight: 600;
     color: white;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     width: 100%; /* Take full width of container */
-    max-width: 900px; /* Slightly smaller max width */
-    min-height: 60px; /* Ensure consistent height */
+    max-width: 1000px; /* Slightly reduced max width */
+    min-height: 65px; /* Reduced minimum height to fit more items */
     box-sizing: border-box; /* Include padding and border in width */
+    flex: 1; /* Allow items to grow equally to fill available space */
 }
 
 /* Add subtle hover effect for better interactivity */
@@ -265,15 +264,15 @@ body {
 .leaderboard-position {
     background: linear-gradient(135deg, #30384d, #1d1c2c);
     border-radius: 50%;
-    width: 45px; /* Slightly smaller for better fit */
-    height: 45px;
+    width: 50px; /* Slightly smaller position circles */
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem; /* Slightly smaller font */
+    font-size: 2.3rem; /* Proportional numbers in position circles - 1.3rem*/
     font-weight: bold;
-    margin-right: 15px; /* Reduced margin */
-    min-width: 45px;
+    margin-right: 22px; /* Increased margin for better spacing */
+    min-width: 55px;
 }
 
 .leaderboard-position.gold {
@@ -294,16 +293,16 @@ body {
 .leaderboard-team-name {
     flex-grow: 1;
     text-align: left;
-    margin-left: 15px; /* Reduced margin */
-    font-size: 1.6rem; /* Smaller font for better fit */
+    margin-left: 20px; /* Slightly reduced margin */
+    font-size: 2.8rem; /* Proportionally adjusted team name text - 1.8rem*/
     font-weight: 700;
 }
 
 .leaderboard-points {
-    font-size: 1.4rem; /* Smaller font for better fit */
+    font-size: 2.6rem; /* Proportionally adjusted points text - 1.6rem*/
     font-weight: bold;
     color: #ffd700;
-    min-width: 80px; /* Reduced min width */
+    min-width: 90px; /* Slightly reduced min width */
     text-align: right;
 }
 
@@ -367,22 +366,30 @@ body {
     }
     
     .leaderboard-item {
-        font-size: 1.6rem; /* Adjusted for medium screens */
-        padding: 12px 20px; /* Reduced padding */
-        margin: 6px 0; /* Reduced margin */
-        min-height: 55px; /* Slightly smaller height */
+        font-size: 2.0rem; /* Large font for medium screens */
+        padding: 18px 28px; /* Good padding */
+        margin: 9px 0; /* Balanced margin */
+        min-height: 70px; /* Good height */
     }
     
     .leaderboard-list {
-        padding: 15px 30px; /* Reduced padding */
+        padding: 12px 30px; /* Balanced padding */
     }
     
     .leaderboard-points {
-        font-size: 1.3rem;
+        font-size: 1.6rem; /* Larger points text */
     }
     
     .leaderboard-team-name {
-        font-size: 1.4rem;
+        font-size: 1.7rem; /* Larger team names */
+        margin-left: 20px;
+    }
+    
+    .leaderboard-position {
+        width: 52px;
+        height: 52px;
+        font-size: 1.3rem; /* Larger position numbers */
+        margin-right: 20px;
     }
 }
 
@@ -413,37 +420,36 @@ body {
     .timer-display {
         padding: 40px 50px;
     }
-    
-    .leaderboard-item {
-        font-size: 1.2rem;
-        padding: 10px 15px; /* Minimal padding for mobile */
-        margin: 5px 0; /* Minimal margin for mobile */
-        min-height: 50px; /* Smaller height for mobile */
+      .leaderboard-item {
+        font-size: 1.6rem; /* Larger font for mobile */
+        padding: 12px 18px; /* Reduced padding for mobile to fit more items */
+        margin: 3px 0; /* Reduced margin for mobile to fit more items */
+        min-height: 55px; /* Reduced height for mobile to fit more items */
     }
     
     .leaderboard-list {
-        padding: 10px 20px; /* Minimal padding for mobile */
+        padding: 5px 15px; /* Minimal padding for mobile to maximize space */
     }
     
     #leaderboardView .flex-grow-1 {
-        padding: 5px 0; /* Minimal vertical padding on mobile */
+        padding: 2px 0; /* Minimal vertical padding on mobile */
     }
     
     .leaderboard-position {
-        width: 35px;
-        height: 35px;
-        font-size: 0.9rem;
-        margin-right: 10px;
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem; /* Larger position numbers */
+        margin-right: 15px;
     }
     
     .leaderboard-team-name {
-        font-size: 1.1rem;
-        margin-left: 10px;
+        font-size: 1.4rem; /* Larger team names */
+        margin-left: 15px;
     }
     
     .leaderboard-points {
-        font-size: 1.1rem;
-        min-width: 60px;
+        font-size: 1.3rem; /* Larger points text */
+        min-width: 75px;
     }
     
     .table th,
