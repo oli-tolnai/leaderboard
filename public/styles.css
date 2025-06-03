@@ -176,26 +176,83 @@ body {
 
 /* Leaderboard Styles */
 .leaderboard-list {
-    max-height: 80vh;
-    overflow: hidden;
-    padding: 0 20px;
+    max-height: 95vh; /* Maximize height for better visibility */
+    height: auto; /* Allow natural height scaling */
+    overflow-y: auto; /* Allow vertical scrolling if needed */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    padding: 20px 40px; /* Consistent padding all around */
+    margin: 0; /* Remove auto margin that could cause issues */
+    width: 100%; /* Take full container width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Start from top instead of center */
+    align-items: center; /* Center content horizontally */
+}
+
+/* Add responsive margins for different screen sizes */
+@media (min-width: 768px) {
+    .leaderboard-list {
+        padding: 20px 60px; /* Balanced padding for tablets */
+    }
+}
+
+@media (min-width: 992px) {
+    .leaderboard-list {
+        padding: 30px 80px; /* More padding for desktop */
+    }
+}
+
+@media (min-width: 1200px) {
+    .leaderboard-list {
+        padding: 30px 100px; /* Maximum padding for large screens */
+        max-width: 1200px; /* Constrain maximum width for better readability */
+        margin: 0 auto; /* Center the container at large sizes */
+    }
+}
+
+@media (min-width: 1400px) {
+    .leaderboard-list {
+        padding: 40px 120px; /* Extra padding for extra large screens */
+        max-width: 1400px; /* Larger max width for extra large screens */
+    }
+}
+
+/* Leaderboard View Container Improvements */
+#leaderboardView .container-fluid {
+    padding: 0; /* Remove extra padding that might cause issues */
+    height: 100vh; /* Ensure full viewport height */
+}
+
+#leaderboardView .flex-grow-1 {
+    padding: 10px 0; /* Minimal vertical padding to avoid bottom cutoff */
+    height: 100%; /* Take full available height */
 }
 
 .leaderboard-item {
     background: linear-gradient(135deg, #1d1c2c, #171725);
     border: 2px solid #30384d;
     border-radius: 15px;
-    margin: 10px 0;
-    padding: 20px 30px;
+    margin: 8px 0; /* Reduced margin to fit more teams */
+    padding: 15px 25px; /* Reduced padding for better fit */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 2.4rem;
-    /* font-size: 1.4rem; */
+    font-size: 1.9rem; /* Smaller font for better fit */
     font-weight: 600;
     color: white;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    /* Remove automatic animation - we control visibility manually */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%; /* Take full width of container */
+    max-width: 900px; /* Slightly smaller max width */
+    min-height: 60px; /* Ensure consistent height */
+    box-sizing: border-box; /* Include padding and border in width */
+}
+
+/* Add subtle hover effect for better interactivity */
+.leaderboard-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes slideInFromBottom {
@@ -208,15 +265,15 @@ body {
 .leaderboard-position {
     background: linear-gradient(135deg, #30384d, #1d1c2c);
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: 45px; /* Slightly smaller for better fit */
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.1rem; /* Slightly smaller font */
     font-weight: bold;
-    margin-right: 20px;
-    min-width: 50px;
+    margin-right: 15px; /* Reduced margin */
+    min-width: 45px;
 }
 
 .leaderboard-position.gold {
@@ -237,16 +294,16 @@ body {
 .leaderboard-team-name {
     flex-grow: 1;
     text-align: left;
-    margin-left: 20px;
-    font-size: 1.8rem;
+    margin-left: 15px; /* Reduced margin */
+    font-size: 1.6rem; /* Smaller font for better fit */
     font-weight: 700;
 }
 
 .leaderboard-points {
-    font-size: 1.6rem;
+    font-size: 1.4rem; /* Smaller font for better fit */
     font-weight: bold;
     color: #ffd700;
-    min-width: 100px;
+    min-width: 80px; /* Reduced min width */
     text-align: right;
 }
 
@@ -310,11 +367,21 @@ body {
     }
     
     .leaderboard-item {
-        font-size: 1.2rem;
-        padding: 15px 25px;
+        font-size: 1.6rem; /* Adjusted for medium screens */
+        padding: 12px 20px; /* Reduced padding */
+        margin: 6px 0; /* Reduced margin */
+        min-height: 55px; /* Slightly smaller height */
+    }
+    
+    .leaderboard-list {
+        padding: 15px 30px; /* Reduced padding */
     }
     
     .leaderboard-points {
+        font-size: 1.3rem;
+    }
+    
+    .leaderboard-team-name {
         font-size: 1.4rem;
     }
 }
@@ -348,20 +415,44 @@ body {
     }
     
     .leaderboard-item {
-        font-size: 1rem;
-        padding: 12px 20px;
+        font-size: 1.2rem;
+        padding: 10px 15px; /* Minimal padding for mobile */
+        margin: 5px 0; /* Minimal margin for mobile */
+        min-height: 50px; /* Smaller height for mobile */
+    }
+    
+    .leaderboard-list {
+        padding: 10px 20px; /* Minimal padding for mobile */
+    }
+    
+    #leaderboardView .flex-grow-1 {
+        padding: 5px 0; /* Minimal vertical padding on mobile */
     }
     
     .leaderboard-position {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+        margin-right: 10px;
     }
-      .table th,
+    
+    .leaderboard-team-name {
+        font-size: 1.1rem;
+        margin-left: 10px;
+    }
+    
+    .leaderboard-points {
+        font-size: 1.1rem;
+        min-width: 60px;
+    }
+    
+    .table th,
     .table td {
         font-size: 1.2rem;
         padding: 12px 8px;
-    }    .table-dark th.task-header {
+    }
+    
+    .table-dark th.task-header {
         font-size: 1.1rem;
         padding: 12px 8px;
     }
