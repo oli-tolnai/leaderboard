@@ -8,6 +8,13 @@ export interface Team {
 export interface Task {
   id: string;
   name: string;
+  groupId?: string; // Optional group assignment
+}
+
+export interface TaskGroup {
+  id: string;
+  name: string;
+  taskIds: string[]; // Array of task IDs that belong to this group
 }
 
 export interface ScoreEntry {
@@ -30,6 +37,7 @@ export interface SoundAlert {
 export interface GameState {
   teams: Team[];
   tasks: Task[];
+  taskGroups: TaskGroup[];
   scores: ScoreEntry[];
   currentView: 'logo' | 'scoreboard' | 'leaderboard' | 'timer';
   timer: TimerConfig;

@@ -48,6 +48,19 @@ let LeaderboardGateway = class LeaderboardGateway {
         this.leaderboardService.removeTask(taskId);
         this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
     }
+    handleAddTaskGroup(name) {
+        const taskGroup = this.leaderboardService.addTaskGroup(name);
+        this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
+        return taskGroup;
+    }
+    handleRemoveTaskGroup(groupId) {
+        this.leaderboardService.removeTaskGroup(groupId);
+        this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
+    }
+    handleUpdateTaskGroup(data) {
+        this.leaderboardService.updateTaskGroup(data.groupId, data.name, data.taskIds);
+        this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
+    }
     handleUpdateScore(data) {
         this.leaderboardService.updateScore(data.teamId, data.taskId, data.points);
         this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
@@ -127,6 +140,27 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], LeaderboardGateway.prototype, "handleRemoveTask", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('addTaskGroup'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], LeaderboardGateway.prototype, "handleAddTaskGroup", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('removeTaskGroup'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], LeaderboardGateway.prototype, "handleRemoveTaskGroup", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('updateTaskGroup'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], LeaderboardGateway.prototype, "handleUpdateTaskGroup", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('updateScore'),
     __param(0, (0, websockets_1.MessageBody)()),

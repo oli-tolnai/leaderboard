@@ -59,6 +59,25 @@ export class LeaderboardGateway {
     this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
   }
 
+  @SubscribeMessage('addTaskGroup')
+  handleAddTaskGroup(@MessageBody() name: string) {
+    const taskGroup = this.leaderboardService.addTaskGroup(name);
+    this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
+    return taskGroup;
+  }
+
+  @SubscribeMessage('removeTaskGroup')
+  handleRemoveTaskGroup(@MessageBody() groupId: string) {
+    this.leaderboardService.removeTaskGroup(groupId);
+    this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
+  }
+
+  @SubscribeMessage('updateTaskGroup')
+  handleUpdateTaskGroup(@MessageBody() data: { groupId: string; name: string; taskIds: string[] }) {
+    this.leaderboardService.updateTaskGroup(data.groupId, data.name, data.taskIds);
+    this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
+  }
+
   @SubscribeMessage('updateScore')
   handleUpdateScore(@MessageBody() data: { teamId: string; taskId: string; points: number }) {
     this.leaderboardService.updateScore(data.teamId, data.taskId, data.points);
@@ -87,7 +106,9 @@ export class LeaderboardGateway {
   handleRemoveSoundAlert(@MessageBody() index: number) {
     this.leaderboardService.removeSoundAlert(index);
     this.server.emit('gameStateUpdate', this.leaderboardService.getGameState());
-  }  @SubscribeMessage('revealNextTeam')
+  }
+
+  @SubscribeMessage('revealNextTeam')
   handleRevealNextTeam() {
     this.leaderboardService.revealNextTeam();
     const gameState = this.leaderboardService.getGameState();

@@ -11,6 +11,13 @@ export declare class LeaderboardGateway {
     handleRemoveTeam(teamId: string): void;
     handleAddTask(name: string): import("./interfaces").Task;
     handleRemoveTask(taskId: string): void;
+    handleAddTaskGroup(name: string): import("./interfaces").TaskGroup;
+    handleRemoveTaskGroup(groupId: string): void;
+    handleUpdateTaskGroup(data: {
+        groupId: string;
+        name: string;
+        taskIds: string[];
+    }): void;
     handleUpdateScore(data: {
         teamId: string;
         taskId: string;

@@ -13,6 +13,7 @@ let LeaderboardService = class LeaderboardService {
         this.gameState = {
             teams: [],
             tasks: [],
+            taskGroups: [],
             scores: [],
             currentView: 'logo',
             timer: { minutes: 5, seconds: 0 },
@@ -121,6 +122,33 @@ let LeaderboardService = class LeaderboardService {
             currentRank = i + 2;
         }
         return rankedTeams;
+    }
+    addTaskGroup(name) {
+        const taskGroup = {
+            id: Date.now().toString(),
+            name,
+            taskIds: [],
+        };
+        this.gameState.taskGroups.push(taskGroup);
+        return taskGroup;
+    }
+    removeTaskGroup(groupId) {
+        this.gameState.tasks = this.gameState.tasks.map(task => (Object.assign(Object.assign({}, task), { groupId: task.groupId === groupId ? undefined : task.groupId })));
+        this.gameState.taskGroups = this.gameState.taskGroups.filter(group => group.id !== groupId);
+    }
+    updateTaskGroup(groupId, name, taskIds) {
+        const groupIndex = this.gameState.taskGroups.findIndex(group => group.id === groupId);
+        if (groupIndex >= 0) {
+            this.gameState.taskGroups[groupIndex].name = name;
+            this.gameState.taskGroups[groupIndex].taskIds = taskIds;
+            this.gameState.tasks = this.gameState.tasks.map(task => (Object.assign(Object.assign({}, task), { groupId: taskIds.includes(task.id) ? groupId : (task.groupId === groupId ? undefined : task.groupId) })));
+        }
+    }
+    getTasksForGroup(groupId) {
+        return this.gameState.tasks.filter(task => task.groupId === groupId);
+    }
+    getUngroupedTasks() {
+        return this.gameState.tasks.filter(task => !task.groupId);
     }
 };
 exports.LeaderboardService = LeaderboardService;

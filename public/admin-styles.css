@@ -67,6 +67,21 @@ body {
     border-color: #30384d;
 }
 
+/* Group header styles for admin scoring matrix */
+.table-dark th[colspan] {
+    background-color: #30384d;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #171725;
+}
+
+/* Individual task headers under groups */
+.table-dark thead tr:last-child th {
+    background-color: #171725;
+    font-size: 0.9rem;
+}
+
 /* Custom list group styles */
 .list-group-item {
     background-color: #171725;
@@ -115,21 +130,89 @@ body {
     box-shadow: 0 0 0 2px rgba(108, 114, 147, 0.25);
 }
 
-/* Status indicators */
-.status-indicator {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 8px;
+/* Enhanced table styling for admin interface */
+.table-dark th.team-header,
+.table-dark th.rank-header,
+.table-dark th.total-header {
+    background: linear-gradient(135deg, #1a202c, #171725);
+    font-weight: 700;
+    color: #f7fafc;
+    border-right: 2px solid #1a202c;
+    vertical-align: middle;
 }
 
-.status-connected {
-    background-color: #28a745;
+.table-dark th.group-header {
+    background: linear-gradient(135deg, #4a5568, #2d3748);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #e2e8f0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    border-left: 2px solid #1a202c;
+    border-right: 2px solid #1a202c;
+    border-bottom: 3px solid #1a202c;
 }
 
-.status-disconnected {
-    background-color: #dc3545;
+.table-dark th.task-header {
+    background-color: #2a2e3a;
+    font-weight: 500;
+    color: #cbd5e0;
+}
+
+.table-dark th.task-header.first-in-group {
+    border-left: 2px solid #1a202c;
+}
+
+.table-dark td.team-cell {
+    background: linear-gradient(135deg, #1a202c, #171725);
+    font-weight: bold;
+    text-align: left;
+    padding-left: 20px;
+    border-right: 2px solid #1a202c;
+}
+
+.table-dark td.rank-cell {
+    background: linear-gradient(135deg, #1a202c, #171725);
+    font-weight: bold;
+    color: #63b3ed;
+    border-right: 2px solid #1a202c;
+}
+
+.table-dark td.total-cell {
+    background: linear-gradient(135deg, #2d3748, #1a202c);
+    font-weight: bold;
+    color: #fbb02d;
+    border-left: 2px solid #1a202c;
+}
+
+.table-dark td.score-cell,
+.table-dark td.score-edit-cell {
+    background-color: #1d1c2c;
+}
+
+.table-dark td.group-separator {
+    border-left: 2px solid #1a202c;
+}
+
+/* Color variations for different groups */
+.table-dark th.group-header.group-0 {
+    background: linear-gradient(135deg, #3182ce, #2c5282);
+}
+
+.table-dark th.group-header.group-1 {
+    background: linear-gradient(135deg, #38a169, #2f855a);
+}
+
+.table-dark th.group-header.group-2 {
+    background: linear-gradient(135deg, #d69e2e, #b7791f);
+}
+
+.table-dark th.group-header.group-3 {
+    background: linear-gradient(135deg, #e53e3e, #c53030);
+}
+
+.table-dark th.group-header.ungrouped-header {
+    background: linear-gradient(135deg, #6b46c1, #553c9a);
 }
 
 /* Animation for list items */

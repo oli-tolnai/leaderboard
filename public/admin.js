@@ -55,6 +55,12 @@ class AdminController {
             if (e.key === 'Enter') this.addTask();
         });
 
+        // Task group management
+        document.getElementById('addTaskGroupBtn').addEventListener('click', () => this.addTaskGroup());
+        document.getElementById('taskGroupNameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.addTaskGroup();
+        });
+
         // Timer settings
         document.getElementById('setTimerBtn').addEventListener('click', () => this.setTimer());
 
@@ -75,6 +81,7 @@ class AdminController {
         this.updateCurrentViewDisplay();
         this.updateTeamsList();
         this.updateTasksList();
+        this.updateTaskGroupsList();
         this.updateScoringMatrix();
         this.updateTimerSettings();
         this.updateSoundAlerts();
@@ -157,6 +164,22 @@ class AdminController {
         }
     }
 
+    addTaskGroup() {
+        const input = document.getElementById('taskGroupNameInput');
+        const groupName = input.value.trim();
+        
+        if (groupName) {
+            this.socket.emit('addTaskGroup', groupName);
+            input.value = '';
+        }
+    }
+
+    removeTaskGroup(groupId) {
+        if (confirm('Are you sure you want to remove this task group? Tasks will be ungrouped.')) {
+            this.socket.emit('removeTaskGroup', groupId);
+        }
+    }
+
     updateScore(teamId, taskId, points) {
         this.socket.emit('updateScore', { teamId, taskId, points: parseInt(points) || 0 });
     }
@@ -182,6 +205,10 @@ class AdminController {
 
     removeSoundAlert(index) {
         this.socket.emit('removeSoundAlert', index);
+    }
+
+    updateTaskGroup(groupId, name, taskIds) {
+        this.socket.emit('updateTaskGroup', { groupId, name, taskIds });
     }
 
     updateTeamsList() {
@@ -211,41 +238,172 @@ class AdminController {
             return;
         }
 
-        container.innerHTML = this.gameState.tasks.map(task => `
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <span>${task.name}</span>
-                <button class="btn btn-sm btn-danger" onclick="adminController.removeTask('${task.id}')">×</button>
-            </div>
-        `).join('');
+        container.innerHTML = this.gameState.tasks.map(task => {
+            const group = this.gameState.taskGroups?.find(g => g.id === task.groupId);
+            const groupName = group ? ` (${group.name})` : '';
+            
+            return `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>${task.name}${groupName}</span>
+                    <button class="btn btn-sm btn-danger" onclick="adminController.removeTask('${task.id}')">×</button>
+                </div>
+            `;
+        }).join('');
     }
 
-    updateScoringMatrix() {
+    updateTaskGroupsList() {
+        const container = document.getElementById('taskGroupsList');
+        
+        if (!this.gameState.taskGroups || this.gameState.taskGroups.length === 0) {
+            container.innerHTML = '<div class="list-group-item">No task groups created yet</div>';
+            return;
+        }
+
+        container.innerHTML = this.gameState.taskGroups.map(group => {
+            const tasksInGroup = this.gameState.tasks.filter(task => task.groupId === group.id);
+            const ungroupedTasks = this.gameState.tasks.filter(task => !task.groupId);
+            
+            return `
+                <div class="card mb-3" style="background-color: #171725; border-color: #30384d;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-white">${group.name}</h6>
+                        <button class="btn btn-sm btn-danger" onclick="adminController.removeTaskGroup('${group.id}')">×</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <small class="text-white-50">Tasks in this group:</small>
+                        </div>
+                        <div class="task-group-tasks mb-3">
+                            ${tasksInGroup.map(task => `
+                                <span class="badge bg-primary me-1 mb-1" style="cursor: pointer;" onclick="adminController.removeTaskFromGroup('${task.id}', '${group.id}')">${task.name} ×</span>
+                            `).join('')}
+                            ${tasksInGroup.length === 0 ? '<small class="text-white-50">No tasks assigned</small>' : ''}
+                        </div>
+                        ${ungroupedTasks.length > 0 ? `
+                            <div class="mb-2">
+                                <small class="text-white-50">Add tasks to group:</small>
+                            </div>
+                            <div class="ungrouped-tasks">
+                                ${ungroupedTasks.map(task => `
+                                    <span class="badge bg-secondary me-1 mb-1" style="cursor: pointer;" onclick="adminController.addTaskToGroup('${task.id}', '${group.id}')">${task.name} +</span>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    addTaskToGroup(taskId, groupId) {
+        const group = this.gameState.taskGroups.find(g => g.id === groupId);
+        if (group) {
+            const newTaskIds = [...group.taskIds, taskId];
+            this.updateTaskGroup(groupId, group.name, newTaskIds);
+        }
+    }
+
+    removeTaskFromGroup(taskId, groupId) {
+        const group = this.gameState.taskGroups.find(g => g.id === groupId);
+        if (group) {
+            const newTaskIds = group.taskIds.filter(id => id !== taskId);
+            this.updateTaskGroup(groupId, group.name, newTaskIds);
+        }
+    }    updateScoringMatrix() {
         const table = document.getElementById('scoringMatrix');
-        const thead = table.querySelector('thead tr');
+        const thead = table.querySelector('thead');
         const tbody = table.querySelector('tbody');
 
         if (!this.gameState.teams || !this.gameState.tasks || 
             this.gameState.teams.length === 0 || this.gameState.tasks.length === 0) {
-            thead.innerHTML = '<th>Team</th><th>Total</th>';
+            thead.innerHTML = '<tr><th class="team-header">Team</th><th class="total-header">Total</th></tr>';
             tbody.innerHTML = '<tr><td colspan="2" class="text-center">Add teams and tasks to see the scoring matrix</td></tr>';
             return;
         }
 
-        // Update header
-        thead.innerHTML = `
-            <th>Team</th>
-            ${this.gameState.tasks.map(task => `<th>${task.name}</th>`).join('')}
-            <th>Total</th>
-        `;
+        // Group tasks and prepare headers
+        const { groupedTasks, ungroupedTasks } = this.organizeTasksByGroups();
+        
+        // Create header rows
+        let headerHTML = '';
+        
+        // First row: group headers (merged)
+        if (this.gameState.taskGroups && this.gameState.taskGroups.length > 0) {
+            headerHTML += '<tr>';
+            headerHTML += '<th rowspan="2" class="team-header">Team</th>';
+            
+            // Add group headers with better styling
+            this.gameState.taskGroups.forEach((group, groupIndex) => {
+                const tasksInGroup = groupedTasks[group.id] || [];
+                if (tasksInGroup.length > 0) {
+                    headerHTML += `<th colspan="${tasksInGroup.length}" class="group-header group-${groupIndex % 4}">${group.name}</th>`;
+                }
+            });
+            
+            // Add ungrouped tasks header if any
+            if (ungroupedTasks.length > 0) {
+                headerHTML += `<th colspan="${ungroupedTasks.length}" class="group-header ungrouped-header">Individual Tasks</th>`;
+            }
+            
+            headerHTML += '<th rowspan="2" class="total-header">Total</th>';
+            headerHTML += '</tr>';
+        }
+        
+        // Second row: individual task headers
+        headerHTML += '<tr>';
+        if (!this.gameState.taskGroups || this.gameState.taskGroups.length === 0) {
+            headerHTML += '<th class="team-header">Team</th>';
+        }
+        
+        // Add task headers in order: grouped tasks first, then ungrouped
+        let taskIndex = 0;
+        this.gameState.taskGroups.forEach((group, groupIndex) => {
+            const tasksInGroup = groupedTasks[group.id] || [];
+            tasksInGroup.forEach((task, index) => {
+                const isFirstInGroup = index === 0;
+                headerHTML += `<th class="task-header ${isFirstInGroup ? 'first-in-group' : ''}">${task.name}</th>`;
+                taskIndex++;
+            });
+        });
+        
+        ungroupedTasks.forEach((task, index) => {
+            const isFirstInGroup = index === 0 && ungroupedTasks.length > 0;
+            headerHTML += `<th class="task-header ${isFirstInGroup ? 'first-in-group' : ''}">${task.name}</th>`;
+        });
+        
+        if (!this.gameState.taskGroups || this.gameState.taskGroups.length === 0) {
+            headerHTML += '<th class="total-header">Total</th>';
+        }
+        headerHTML += '</tr>';
+        
+        thead.innerHTML = headerHTML;
 
-        // Update body
+        // Update body with tasks in the same order as headers and add group separators
+        const orderedTasks = [];
+        const taskGroupInfo = []; // Track which group each task belongs to
+        
+        this.gameState.taskGroups.forEach((group, groupIndex) => {
+            const tasksInGroup = groupedTasks[group.id] || [];
+            tasksInGroup.forEach((task, index) => {
+                orderedTasks.push(task);
+                taskGroupInfo.push({ groupIndex, isFirstInGroup: index === 0 });
+            });
+        });
+        
+        ungroupedTasks.forEach((task, index) => {
+            orderedTasks.push(task);
+            taskGroupInfo.push({ groupIndex: -1, isFirstInGroup: index === 0 && ungroupedTasks.length > 0 });
+        });
+
         tbody.innerHTML = this.gameState.teams.map(team => `
-            <tr>
-                <td class="fw-bold">${team.name}</td>
-                ${this.gameState.tasks.map(task => {
+            <tr class="team-row">
+                <td class="team-cell">${team.name}</td>
+                ${orderedTasks.map((task, index) => {
                     const score = this.gameState.scores.find(s => s.teamId === team.id && s.taskId === task.id);
+                    const groupInfo = taskGroupInfo[index];
+                    const separatorClass = groupInfo.isFirstInGroup ? 'group-separator' : '';
                     return `
-                        <td>
+                        <td class="score-edit-cell ${separatorClass}">
                             <input type="number" 
                                    class="score-input" 
                                    value="${score ? score.points : 0}"
@@ -254,9 +412,32 @@ class AdminController {
                         </td>
                     `;
                 }).join('')}
-                <td class="fw-bold text-warning">${team.totalPoints || 0}</td>
+                <td class="total-cell">${team.totalPoints || 0}</td>
             </tr>
         `).join('');
+    }
+
+    organizeTasksByGroups() {
+        const groupedTasks = {};
+        const ungroupedTasks = [];
+        
+        // Initialize grouped tasks
+        if (this.gameState.taskGroups) {
+            this.gameState.taskGroups.forEach(group => {
+                groupedTasks[group.id] = [];
+            });
+        }
+        
+        // Organize tasks
+        this.gameState.tasks.forEach(task => {
+            if (task.groupId && groupedTasks[task.groupId]) {
+                groupedTasks[task.groupId].push(task);
+            } else {
+                ungroupedTasks.push(task);
+            }
+        });
+        
+        return { groupedTasks, ungroupedTasks };
     }
 
     updateTimerSettings() {

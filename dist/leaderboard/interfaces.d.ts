@@ -7,6 +7,12 @@ export interface Team {
 export interface Task {
     id: string;
     name: string;
+    groupId?: string;
+}
+export interface TaskGroup {
+    id: string;
+    name: string;
+    taskIds: string[];
 }
 export interface ScoreEntry {
     teamId: string;
@@ -25,6 +31,7 @@ export interface SoundAlert {
 export interface GameState {
     teams: Team[];
     tasks: Task[];
+    taskGroups: TaskGroup[];
     scores: ScoreEntry[];
     currentView: 'logo' | 'scoreboard' | 'leaderboard' | 'timer';
     timer: TimerConfig;

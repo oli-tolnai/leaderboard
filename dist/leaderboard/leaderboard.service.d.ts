@@ -1,4 +1,4 @@
-import { Team, Task, GameState } from './interfaces';
+import { Team, Task, TaskGroup, GameState } from './interfaces';
 export declare class LeaderboardService {
     private gameState;
     getGameState(): GameState;
@@ -17,4 +17,9 @@ export declare class LeaderboardService {
     private calculateTotalPoints;
     getSortedTeams(): Team[];
     calculateStandardRanking(): Team[];
+    addTaskGroup(name: string): TaskGroup;
+    removeTaskGroup(groupId: string): void;
+    updateTaskGroup(groupId: string, name: string, taskIds: string[]): void;
+    getTasksForGroup(groupId: string): Task[];
+    getUngroupedTasks(): Task[];
 }

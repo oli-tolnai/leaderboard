@@ -93,12 +93,23 @@ class DisplayController {
 
         if (!this.gameState.teams || !this.gameState.tasks) return;
 
-        // Update header
+        // Check if we have task groups
+        const hasGroups = this.gameState.taskGroups && this.gameState.taskGroups.length > 0;
+        
+        if (hasGroups) {
+            this.updateScoreboardWithGroups(header, body);
+        } else {
+            this.updateScoreboardSimple(header, body);
+        }
+    }    updateScoreboardSimple(header, body) {
+        // Update header - simple version without groups
         header.innerHTML = `
-            <th>Rank</th>
-            <th>Team</th>
-            ${this.gameState.tasks.map(task => `<th>${task.name}</th>`).join('')}
-            <th>Total</th>
+            <tr>
+                <th class="rank-header">Rank</th>
+                <th class="team-header">Team</th>
+                ${this.gameState.tasks.map(task => `<th class="task-header">${task.name}</th>`).join('')}
+                <th class="total-header">Total</th>
+            </tr>
         `;
 
         // Get sorted teams and calculate ranking
@@ -107,16 +118,124 @@ class DisplayController {
 
         // Update body
         body.innerHTML = rankedTeams.map(team => `
-            <tr>
-                <td class="fw-bold text-info">${team.rank}</td>
-                <td class="fw-bold">${team.name}</td>
+            <tr class="team-row">
+                <td class="rank-cell">${team.rank}</td>
+                <td class="team-cell">${team.name}</td>
                 ${this.gameState.tasks.map(task => {
                     const score = this.gameState.scores.find(s => s.teamId === team.id && s.taskId === task.id);
-                    return `<td>${score ? score.points : 0}</td>`;
+                    return `<td class="score-cell">${score ? score.points : 0}</td>`;
                 }).join('')}
-                <td class="fw-bold text-warning">${team.totalPoints || 0}</td>
+                <td class="total-cell">${team.totalPoints || 0}</td>
             </tr>
         `).join('');
+    }updateScoreboardWithGroups(header, body) {
+        // Group tasks and prepare headers
+        const { groupedTasks, ungroupedTasks } = this.organizeTasksByGroups();
+        
+        // Create header HTML with merged group headers
+        let headerHTML = '';
+        
+        // First row: group headers (merged)
+        headerHTML += '<tr>';
+        headerHTML += '<th rowspan="2" class="rank-header">Rank</th>';
+        headerHTML += '<th rowspan="2" class="team-header">Team</th>';
+        
+        // Add group headers with better styling
+        this.gameState.taskGroups.forEach((group, groupIndex) => {
+            const tasksInGroup = groupedTasks[group.id] || [];
+            if (tasksInGroup.length > 0) {
+                headerHTML += `<th colspan="${tasksInGroup.length}" class="group-header group-${groupIndex % 4}">${group.name}</th>`;
+            }
+        });
+        
+        // Add ungrouped tasks header if any
+        if (ungroupedTasks.length > 0) {
+            headerHTML += `<th colspan="${ungroupedTasks.length}" class="group-header ungrouped-header">Individual Tasks</th>`;
+        }
+        
+        headerHTML += '<th rowspan="2" class="total-header">Total</th>';
+        headerHTML += '</tr>';
+        
+        // Second row: individual task headers
+        headerHTML += '<tr>';
+        
+        // Add task headers in order: grouped tasks first, then ungrouped
+        let taskIndex = 0;
+        this.gameState.taskGroups.forEach((group, groupIndex) => {
+            const tasksInGroup = groupedTasks[group.id] || [];
+            tasksInGroup.forEach((task, index) => {
+                const isFirstInGroup = index === 0;
+                headerHTML += `<th class="task-header ${isFirstInGroup ? 'first-in-group' : ''}">${task.name}</th>`;
+                taskIndex++;
+            });
+        });
+        
+        ungroupedTasks.forEach((task, index) => {
+            const isFirstInGroup = index === 0 && ungroupedTasks.length > 0;
+            headerHTML += `<th class="task-header ${isFirstInGroup ? 'first-in-group' : ''}">${task.name}</th>`;
+        });
+        
+        headerHTML += '</tr>';
+        
+        header.innerHTML = headerHTML;
+
+        // Update body with tasks in the same order as headers and add group separators
+        const orderedTasks = [];
+        const taskGroupInfo = []; // Track which group each task belongs to
+        
+        this.gameState.taskGroups.forEach((group, groupIndex) => {
+            const tasksInGroup = groupedTasks[group.id] || [];
+            tasksInGroup.forEach((task, index) => {
+                orderedTasks.push(task);
+                taskGroupInfo.push({ groupIndex, isFirstInGroup: index === 0 });
+            });
+        });
+        
+        ungroupedTasks.forEach((task, index) => {
+            orderedTasks.push(task);
+            taskGroupInfo.push({ groupIndex: -1, isFirstInGroup: index === 0 && ungroupedTasks.length > 0 });
+        });
+
+        // Get sorted teams and calculate ranking
+        const sortedTeams = this.getAllSortedTeams();
+        const rankedTeams = this.calculateStandardRanking(sortedTeams);
+
+        body.innerHTML = rankedTeams.map(team => `
+            <tr class="team-row">
+                <td class="rank-cell">${team.rank}</td>
+                <td class="team-cell">${team.name}</td>
+                ${orderedTasks.map((task, index) => {
+                    const score = this.gameState.scores.find(s => s.teamId === team.id && s.taskId === task.id);
+                    const groupInfo = taskGroupInfo[index];
+                    const separatorClass = groupInfo.isFirstInGroup ? 'group-separator' : '';
+                    return `<td class="score-cell ${separatorClass}">${score ? score.points : 0}</td>`;
+                }).join('')}
+                <td class="total-cell">${team.totalPoints || 0}</td>
+            </tr>
+        `).join('');
+    }
+
+    organizeTasksByGroups() {
+        const groupedTasks = {};
+        const ungroupedTasks = [];
+        
+        // Initialize grouped tasks
+        if (this.gameState.taskGroups) {
+            this.gameState.taskGroups.forEach(group => {
+                groupedTasks[group.id] = [];
+            });
+        }
+        
+        // Organize tasks
+        this.gameState.tasks.forEach(task => {
+            if (task.groupId && groupedTasks[task.groupId]) {
+                groupedTasks[task.groupId].push(task);
+            } else {
+                ungroupedTasks.push(task);
+            }
+        });
+        
+        return { groupedTasks, ungroupedTasks };
     }updateLeaderboard() {
         const leaderboardList = document.getElementById('leaderboardList');
         

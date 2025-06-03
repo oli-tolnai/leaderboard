@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Team, Task, ScoreEntry, GameState, TimerConfig, SoundAlert } from './interfaces';
+import { Team, Task, TaskGroup, ScoreEntry, GameState, TimerConfig, SoundAlert } from './interfaces';
 
 @Injectable()
 export class LeaderboardService {  private gameState: GameState = {
     teams: [],
     tasks: [],
+    taskGroups: [],
     scores: [],
     currentView: 'logo',
     timer: { minutes: 5, seconds: 0 },
@@ -156,5 +157,47 @@ export class LeaderboardService {  private gameState: GameState = {
     }
     
     return rankedTeams;
+  }
+
+  addTaskGroup(name: string): TaskGroup {
+    const taskGroup: TaskGroup = {
+      id: Date.now().toString(),
+      name,
+      taskIds: [],
+    };
+    this.gameState.taskGroups.push(taskGroup);
+    return taskGroup;
+  }
+
+  removeTaskGroup(groupId: string): void {
+    // Remove groupId from tasks that belong to this group
+    this.gameState.tasks = this.gameState.tasks.map(task => ({
+      ...task,
+      groupId: task.groupId === groupId ? undefined : task.groupId
+    }));
+    
+    this.gameState.taskGroups = this.gameState.taskGroups.filter(group => group.id !== groupId);
+  }
+
+  updateTaskGroup(groupId: string, name: string, taskIds: string[]): void {
+    const groupIndex = this.gameState.taskGroups.findIndex(group => group.id === groupId);
+    if (groupIndex >= 0) {
+      this.gameState.taskGroups[groupIndex].name = name;
+      this.gameState.taskGroups[groupIndex].taskIds = taskIds;
+      
+      // Update task assignments
+      this.gameState.tasks = this.gameState.tasks.map(task => ({
+        ...task,
+        groupId: taskIds.includes(task.id) ? groupId : (task.groupId === groupId ? undefined : task.groupId)
+      }));
+    }
+  }
+
+  getTasksForGroup(groupId: string): Task[] {
+    return this.gameState.tasks.filter(task => task.groupId === groupId);
+  }
+
+  getUngroupedTasks(): Task[] {
+    return this.gameState.tasks.filter(task => !task.groupId);
   }
 }
