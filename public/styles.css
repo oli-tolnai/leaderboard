@@ -60,17 +60,17 @@ body {
     border-color: #30384d;
     color: white;
     font-weight: 600;
-    font-size: 1.3rem;
-    padding: 15px;
+    font-size: 1.6rem;
+    padding: 18px;
     text-align: center;
     position: relative;
 }
 
 .table-dark td {
     border-color: #30384d;
-    padding: 12px 15px;
+    padding: 16px 18px;
     text-align: center;
-    font-size: 1.45rem;
+    font-size: 1.6rem;
     vertical-align: middle;
     position: relative;
 }
@@ -81,7 +81,7 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 2px;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     border-bottom: 3px solid #1a202c;
     border-left: 2px solid #1a202c;
     border-right: 2px solid #1a202c;
@@ -104,8 +104,8 @@ body {
 /* Individual task headers under groups with group-specific styling */
 .table-dark thead tr:last-child th {
     background-color: #2a2e3a;
-    font-size: 1.0rem;
-    padding: 12px 8px;
+    font-size: 1.6rem;
+    padding: 15px 12px;
     border-top: none;
     font-weight: 500;
     color: #cbd5e0;
@@ -285,6 +285,25 @@ body {
 }
 
 /* Responsive Design */
+@media (min-width: 1400px) {
+    .table-dark th {
+        font-size: 1.9rem;
+        padding: 22px;
+    }
+    
+    .table-dark td {
+        font-size: 1.9rem;
+        padding: 20px 22px;
+    }
+    
+    .table-dark th[colspan] {
+        font-size: 1.7rem;
+    }    .table-dark th.task-header {
+        font-size: 1.7rem;
+        padding: 17px 15px;
+    }
+}
+
 @media (max-width: 1200px) {
     .timer-text {
         font-size: 6rem;
@@ -297,6 +316,25 @@ body {
     
     .leaderboard-points {
         font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .table-dark th {
+        font-size: 1.4rem;
+        padding: 15px;
+    }
+    
+    .table-dark td {
+        font-size: 1.4rem;
+        padding: 13px 15px;
+    }
+    
+    .table-dark th[colspan] {
+        font-size: 1.2rem;
+    }    .table-dark th.task-header {
+        font-size: 1.2rem;
+        padding: 12px 10px;
     }
 }
 
@@ -319,11 +357,13 @@ body {
         height: 40px;
         font-size: 1rem;
     }
-    
-    .table th,
+      .table th,
     .table td {
-        font-size: 0.9rem;
-        padding: 8px 12px;
+        font-size: 1.2rem;
+        padding: 12px 8px;
+    }    .table-dark th.task-header {
+        font-size: 1.1rem;
+        padding: 12px 8px;
     }
 }
 
@@ -361,8 +401,10 @@ body {
 
 .table-dark th.task-header {
     background-color: #2a2e3a;
-    font-weight: 500;
+    font-weight: 600;
     color: #cbd5e0;
+    font-size: 1.6rem;
+    padding: 15px 12px;
 }
 
 .table-dark th.task-header.first-in-group {

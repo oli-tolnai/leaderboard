@@ -112,12 +112,11 @@ class DisplayController {
             </tr>
         `;
 
-        // Get sorted teams and calculate ranking
-        const sortedTeams = this.getAllSortedTeams();
-        const rankedTeams = this.calculateStandardRanking(sortedTeams);
+        // Get teams in original order but with ranks calculated
+        const teamsWithRanks = this.getTeamsInOriginalOrderWithRanks();
 
         // Update body
-        body.innerHTML = rankedTeams.map(team => `
+        body.innerHTML = teamsWithRanks.map(team => `
             <tr class="team-row">
                 <td class="rank-cell">${team.rank}</td>
                 <td class="team-cell">${team.name}</td>
@@ -194,13 +193,10 @@ class DisplayController {
         ungroupedTasks.forEach((task, index) => {
             orderedTasks.push(task);
             taskGroupInfo.push({ groupIndex: -1, isFirstInGroup: index === 0 && ungroupedTasks.length > 0 });
-        });
+        });        // Get teams in original order but with ranks calculated
+        const teamsWithRanks = this.getTeamsInOriginalOrderWithRanks();
 
-        // Get sorted teams and calculate ranking
-        const sortedTeams = this.getAllSortedTeams();
-        const rankedTeams = this.calculateStandardRanking(sortedTeams);
-
-        body.innerHTML = rankedTeams.map(team => `
+        body.innerHTML = teamsWithRanks.map(team => `
             <tr class="team-row">
                 <td class="rank-cell">${team.rank}</td>
                 <td class="team-cell">${team.name}</td>
@@ -260,6 +256,26 @@ class DisplayController {
     }    getAllSortedTeams() {
         if (!this.gameState.teams) return [];
         return [...this.gameState.teams].sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+    }
+
+    getTeamsInOriginalOrderWithRanks() {
+        if (!this.gameState.teams) return [];
+        
+        // First, get all teams sorted by score to calculate ranks
+        const sortedTeams = this.getAllSortedTeams();
+        const rankedTeams = this.calculateStandardRanking(sortedTeams);
+        
+        // Create a lookup map for ranks
+        const rankMap = new Map();
+        rankedTeams.forEach(team => {
+            rankMap.set(team.id, team.rank);
+        });
+        
+        // Return teams in original order but with ranks assigned
+        return this.gameState.teams.map(team => ({
+            ...team,
+            rank: rankMap.get(team.id) || 1
+        }));
     }
 
     calculateStandardRanking(sortedTeams) {
