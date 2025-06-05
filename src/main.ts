@@ -16,10 +16,10 @@ async function bootstrap() {
   app.enableCors({
     origin: true,
     credentials: true,
-  });
-  const port = process.env.PORT || 8080;
-  await app.listen(port);
+  });  const port = process.env.PORT || 8080;
+  await app.listen(port, '0.0.0.0');
   console.log(`Application is running on: http://localhost:${port}`);
+  console.log(`Network access: http://192.168.1.130:${port}`);
 }
 
 bootstrap();
